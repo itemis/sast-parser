@@ -9,6 +9,7 @@ import jinja2
 import json
 import sys
 import os.path
+import re
 
 def filePath(vulnerability):
     return vulnerability['location']['file']
@@ -16,11 +17,11 @@ def filePath(vulnerability):
 def countSeverities(vulnerabilities):
     # Pre-define severities we expect so we don't have to sort later
     frequencies = {
-        'Critical': 0,
-        'High': 0,
-        'Medium': 0,
-        'Low': 0,
-        'Unknown': 0
+        '4 - Critical': 0,
+        '3 - High': 0,
+        '2 - Medium': 0,
+        '1 - Low': 0,
+        '0 - Unknown': 0
     }
 
     for vulnerability in vulnerabilities:
@@ -73,6 +74,40 @@ for json_file in args.files:
 
         vulns = jsonpath_expr.find(data)
         for vuln in vulns:
+            severity = vuln.value.get('severity') or 'Unknown'
+            if severity == "Critical":
+                vuln.value['severity'] = "4 - Critical"
+            elif severity == "High":
+                vuln.value['severity'] = "3 - High"
+            elif severity == "Medium":
+                vuln.value['severity'] = "2 - Medium"
+            elif severity == "Low":
+                vuln.value['severity'] = "1 - Low"
+            else:
+                vuln.value['severity'] = f"0 - {severity}"
+
+            confidence = vuln.value.get('confidence') or 'Unknown'
+            if confidence == "Critical":
+                vuln.value['confidence'] = "4 - Critical"
+            elif confidence == "High":
+                vuln.value['confidence'] = "3 - High"
+            elif confidence == "Medium":
+                vuln.value['confidence'] = "2 - Medium"
+            elif confidence == "Low":
+                vuln.value['confidence'] = "1 - Low"
+            else:
+                vuln.value['confidence'] = f"0 - {confidence}"
+
+            p = re.compile("gl-(?P<step>[a-zA-Z0-9-_]+)-report(-(?P<analyzer>[a-zA-Z0-9-_]+))?\.json")
+            m = p.match(json_file)
+            vuln.value['source'] = json_file
+            if m.group("step"):
+                vuln.value['step'] = m.group("step")
+            if m.group("analyzer"):
+                vuln.value['analyzer'] = m.group("analyzer")
+
+            vuln.value['name'] = vuln.value.get('name') or ''
+
             vulnerabilities.append(vuln.value)
 
 frequencies=countSeverities(vulnerabilities)
