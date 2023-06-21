@@ -98,14 +98,9 @@ for json_file in args.files:
             else:
                 vuln.value['confidence'] = f"0 - {confidence}"
 
-            p = re.compile("gl-(?P<step>[a-zA-Z0-9-_]+)-report(-(?P<analyzer>[a-zA-Z0-9-_]+))?\.json")
-            m = p.match(json_file)
-            vuln.value['source'] = json_file
-            if m.group("step"):
-                vuln.value['step'] = m.group("step")
-            if m.group("analyzer"):
-                vuln.value['analyzer'] = m.group("analyzer")
-
+            vuln.value['source'] = vuln.value.get('source') or ''
+            vuln.value['step'] = vuln.value.get('step') or ''
+            vuln.value['analyzer'] = vuln.value.get('analyzer') or ''
             vuln.value['name'] = vuln.value.get('name') or ''
 
             vulnerabilities.append(vuln.value)
