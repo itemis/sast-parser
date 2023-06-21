@@ -1,3 +1,10 @@
+.devcontainer
+.env
+.github
+*.bat
 *.json
+build.sh
+Dockerfile
 index.html
-.devcontainer/
+publish.sh
+README.md
